@@ -148,6 +148,14 @@ label {
   color: var(--muted);
 }
 
+/* A label is a grid, so a bare span beside the text would become its own row
+   and read as a second label. Keeping them in one child keeps them on one line. */
+.label-row {
+  display: flex;
+  gap: 0.35rem;
+  align-items: baseline;
+}
+
 input[type='text'],
 input[type='email'] {
   padding: 0.5rem 0.65rem;
