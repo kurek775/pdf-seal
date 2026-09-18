@@ -1,4 +1,13 @@
-import { Component, computed, inject, input, output, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+  untracked,
+} from '@angular/core';
 import { SealApi, SealedFile } from '../../core/seal-api';
 import { NavigationCounts, SealRow, UploadResult } from '../../core/types';
 
@@ -19,6 +28,20 @@ export class SealStep {
   protected readonly finished = signal<SealedFile | null>(null);
 
   protected readonly ready = computed(() => this.rows().length > 0);
+
+  constructor() {
+    // Whatever was sealed a moment ago belongs to the inputs as they were then.
+    // Leaving the confirmation on screen after the buyers change would claim a
+    // file had been saved that nobody asked for.
+    effect(() => {
+      this.rows();
+      this.upload();
+      untracked(() => {
+        this.finished.set(null);
+        this.error.set('');
+      });
+    });
+  }
   protected readonly counts = computed<NavigationCounts>(() => this.upload().counts);
   protected readonly hasNavigation = computed(
     () => this.counts().links > 0 || this.counts().bookmarks > 0,

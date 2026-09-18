@@ -26,8 +26,10 @@
   <button type="button" class="primary" [disabled]="!ready() || busy()" (click)="run()">
     @if (busy()) {
       Sealing {{ rows().length }} {{ rows().length === 1 ? 'copy' : 'copies' }}…
-    } @else {
+    } @else if (ready()) {
       Seal {{ rows().length }} {{ rows().length === 1 ? 'copy' : 'copies' }}
+    } @else {
+      Seal
     }
   </button>
 
