@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Oldest supported and current. The tool has no dependencies, so the
+        # middle of the range holds if both ends do.
+        python: ['3.9', '3.13']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      # qpdf does the sealing; pdftotext reads the seal back; ghostscript
+      # renders pages for the "invisible really is invisible" comparison.
+      # Installing all three means no test silently skips itself in CI.
+      - name: Install PDF tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends qpdf poppler-utils ghostscript
+          qpdf --version
+
+      - name: Refuse to run with tests skipped
+        run: |
+          python -m unittest discover -s tests -v 2>&1 | tee result.txt
+          if grep -q "skipped" result.txt; then
+            echo "::error::A test skipped itself, which means a tool is missing from CI."
+            exit 1
+          fi
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: pip install ruff
+      - run: ruff check .
+      - run: ruff format --check .

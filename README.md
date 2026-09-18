@@ -108,6 +108,22 @@ rest of the Czech set. Accents are therefore stripped from the seal text: "Šár
 Kvašňáková" is stored as "Sarka Kvasnakova". The identifiers that matter for tracing,
 the e-mail address and the order number, are plain ASCII anyway.
 
+## Tests
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+19 tests, no packages to install. The fixture is a PDF built by hand in
+`tests/fixtures.py` carrying exactly what a seal must not destroy: a link
+annotation with an in-document jump, and an outline entry. One test asserts the
+fixture really has those, so the others cannot pass by asserting that zero links
+survived.
+
+Tests needing `pdftotext` or `ghostscript` skip themselves when those are absent,
+so the suite still runs with only qpdf installed. CI installs all three and fails
+the build if any test skips, so nothing goes unchecked there.
+
 ## Before you ship it: the legal side
 
 Writing a buyer's name and e-mail into a file is **processing of personal data**.

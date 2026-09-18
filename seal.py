@@ -41,14 +41,16 @@ import tempfile
 import unicodedata
 from pathlib import Path
 
+
 # Helvetica only speaks WinAnsi, which has no c-caron, r-caron, s-caron and the
 # rest of the Czech set. Accents are therefore stripped from the seal text:
 # "Sarka Kvasnakova" instead of the accented spelling. The identifiers that
 # actually matter for tracing -- the e-mail address and the order number -- are
 # plain ASCII anyway.
 def strip_accents(text: str) -> str:
-    return ''.join(c for c in unicodedata.normalize('NFKD', text)
-                   if not unicodedata.combining(c))
+    return ''.join(
+        c for c in unicodedata.normalize('NFKD', text) if not unicodedata.combining(c)
+    )
 
 
 def pdf_string(text: str) -> bytes:
@@ -68,12 +70,12 @@ def build_seal_pdf(text: str, width: float, height: float, visible: bool) -> byt
     objects = [
         b'<< /Type /Catalog /Pages 2 0 R >>',
         b'<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
-        (f'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {width:g} {height:g}] '
-         f'/Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>').encode(),
-        b'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica '
-        b'/Encoding /WinAnsiEncoding >>',
-        b'<< /Length ' + str(len(content)).encode() + b' >>\nstream\n'
-        + content + b'endstream',
+        (
+            f'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {width:g} {height:g}] '
+            f'/Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>'
+        ).encode(),
+        b'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>',
+        b'<< /Length ' + str(len(content)).encode() + b' >>\nstream\n' + content + b'endstream',
     ]
 
     out = bytearray(b'%PDF-1.4\n')
@@ -85,23 +87,31 @@ def build_seal_pdf(text: str, width: float, height: float, visible: bool) -> byt
     out += f'xref\n0 {len(objects) + 1}\n'.encode() + b'0000000000 65535 f \n'
     for offset in offsets:
         out += f'{offset:010d} 00000 n \n'.encode()
-    out += (f'trailer\n<< /Size {len(objects) + 1} /Root 1 0 R >>\n'
-            f'startxref\n{xref_at}\n%%EOF\n').encode()
+    out += (
+        f'trailer\n<< /Size {len(objects) + 1} /Root 1 0 R >>\nstartxref\n{xref_at}\n%%EOF\n'
+    ).encode()
     return bytes(out)
 
 
 def to_qdf(pdf: Path, target: Path) -> None:
     """Expand a PDF into qpdf's uncompressed form so it can be inspected."""
-    subprocess.run(['qpdf', '--qdf', '--object-streams=disable',
-                    '--decode-level=none', str(pdf), str(target)],
-                   capture_output=True)
+    subprocess.run(
+        [
+            'qpdf',
+            '--qdf',
+            '--object-streams=disable',
+            '--decode-level=none',
+            str(pdf),
+            str(target),
+        ],
+        capture_output=True,
+    )
 
 
 def page_size(pdf: Path) -> tuple[float, float]:
     """First page size, via pdfinfo when available, else from /MediaBox."""
     if shutil.which('pdfinfo'):
-        output = subprocess.run(['pdfinfo', str(pdf)],
-                                capture_output=True, text=True).stdout
+        output = subprocess.run(['pdfinfo', str(pdf)], capture_output=True, text=True).stdout
         found = re.search(r'Page size:\s+([\d.]+) x ([\d.]+)', output)
         if found:
             return float(found.group(1)), float(found.group(2))
@@ -111,7 +121,8 @@ def page_size(pdf: Path) -> tuple[float, float]:
         to_qdf(pdf, expanded)
         found = re.search(
             rb'/MediaBox\s*\[\s*([\d.-]+)\s+([\d.-]+)\s+([\d.-]+)\s+([\d.-]+)',
-            expanded.read_bytes())
+            expanded.read_bytes(),
+        )
     if not found:
         raise SystemExit('Could not determine the page size.')
     x0, y0, x1, y1 = (float(found.group(i)) for i in range(1, 5))
@@ -138,9 +149,10 @@ def seal(source: Path, target: Path, text: str, visible: bool) -> None:
         stamp = Path(tmp) / 'stamp.pdf'
         stamp.write_bytes(build_seal_pdf(text, width, height, visible))
         done = subprocess.run(
-            ['qpdf', str(source), '--overlay', str(stamp), '--repeat=1', '--',
-             str(target)],
-            capture_output=True, text=True)
+            ['qpdf', str(source), '--overlay', str(stamp), '--repeat=1', '--', str(target)],
+            capture_output=True,
+            text=True,
+        )
     # qpdf exits 3 on warnings that are not failures; a real failure is 2.
     if done.returncode not in (0, 3):
         raise SystemExit(f'qpdf failed: {done.stderr.strip()}')
@@ -150,33 +162,44 @@ def render_template(template: str, row: dict[str, str]) -> str:
     try:
         return template.format(**row)
     except KeyError as missing:
-        raise SystemExit(f'Template uses column {missing}, which the CSV does '
-                         f'not have. Columns: {", ".join(row)}')
+        raise SystemExit(
+            f'Template uses column {missing}, which the CSV does not have. '
+            f'Columns: {", ".join(row)}'
+        ) from None
 
 
 def describe(label: str, counts: dict[str, int]) -> str:
-    return (f'{label:6} links {counts["links"]}, jumps {counts["jumps"]}, '
-            f'web {counts["web"]}, bookmarks {counts["bookmarks"]}')
+    return (
+        f'{label:6} links {counts["links"]}, jumps {counts["jumps"]}, '
+        f'web {counts["web"]}, bookmarks {counts["bookmarks"]}'
+    )
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description='Seal a PDF with buyer details without breaking links or bookmarks.')
+        description='Seal a PDF with buyer details without breaking links or bookmarks.'
+    )
     parser.add_argument('pdf', type=Path, help='the PDF to seal')
     parser.add_argument('--text', help='seal text, for a single file')
-    parser.add_argument('--csv', type=Path,
-                        help='CSV of buyers; one sealed file per row')
-    parser.add_argument('--template', default='{name} | {email}',
-                        help='how to build the seal text from CSV columns')
-    parser.add_argument('--filename', default='{email}.pdf',
-                        help='how to name each file of a batch')
+    parser.add_argument('--csv', type=Path, help='CSV of buyers; one sealed file per row')
+    parser.add_argument(
+        '--template',
+        default='{name} | {email}',
+        help='how to build the seal text from CSV columns',
+    )
+    parser.add_argument(
+        '--filename', default='{email}.pdf', help='how to name each file of a batch'
+    )
     parser.add_argument('--out', type=Path, help='output file, for a single PDF')
-    parser.add_argument('--outdir', type=Path, default=Path('sealed'),
-                        help='where a batch is written')
-    parser.add_argument('--visible', action='store_true',
-                        help='also seal visibly, as a small grey footer line')
-    parser.add_argument('--verify', action='store_true',
-                        help='count links and bookmarks before and after')
+    parser.add_argument(
+        '--outdir', type=Path, default=Path('sealed'), help='where a batch is written'
+    )
+    parser.add_argument(
+        '--visible', action='store_true', help='also seal visibly, as a small grey footer line'
+    )
+    parser.add_argument(
+        '--verify', action='store_true', help='count links and bookmarks before and after'
+    )
     args = parser.parse_args()
 
     if not shutil.which('qpdf'):

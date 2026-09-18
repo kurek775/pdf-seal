@@ -1,0 +1,11 @@
+# Only here to configure ruff. The tool itself has no dependencies and is not
+# packaged: it is a single script you run.
+[tool.ruff]
+line-length = 96
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+
+[tool.ruff.format]
+quote-style = "single"

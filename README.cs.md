@@ -98,6 +98,21 @@ Pečeť se sází Helveticou, která umí jen WinAnsi — bez č, ř, š, ž, ů
 uloží jako „Sarka Kvasnakova". Údaje rozhodující pro dohledání, tedy e-mail
 a číslo objednávky, jsou beztak bez háčků.
 
+## Testy
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+19 testů, nic se neinstaluje. Testovací PDF se skládá ručně v `tests/fixtures.py`
+a nese přesně to, co pečeť nesmí zničit: odkaz se skokem uvnitř dokumentu
+a položku osnovy. Jeden test ověřuje, že to fixture opravdu má — jinak by ostatní
+mohly projít tím, že se nic neztratilo, protože nebylo co ztratit.
+
+Testy, které potřebují `pdftotext` nebo `ghostscript`, se bez nich přeskočí, takže
+sada běží i tam, kde je jen qpdf. CI instaluje všechno a **build shodí, když se
+nějaký test přeskočí**, aby tam nic nezůstalo neověřené.
+
 ## Než to nasadíte: právní stránka
 
 Zapsat jméno a e-mail kupujícího do souboru je **zpracování osobních údajů**.
