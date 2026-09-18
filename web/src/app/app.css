@@ -1,0 +1,30 @@
+:host {
+  display: block;
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 3rem 1.25rem 4rem;
+}
+
+header h1 {
+  margin: 0 0 0.35rem;
+  font-size: 1.6rem;
+  letter-spacing: -0.02em;
+}
+
+header p {
+  margin: 0 0 2rem;
+  color: var(--muted);
+  max-width: 34rem;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+footer {
+  margin-top: 2.5rem;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}

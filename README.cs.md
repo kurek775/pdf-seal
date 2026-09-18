@@ -98,6 +98,29 @@ Pečeť se sází Helveticou, která umí jen WinAnsi — bez č, ř, š, ž, ů
 uloží jako „Sarka Kvasnakova". Údaje rozhodující pro dohledání, tedy e-mail
 a číslo objednávky, jsou beztak bez háčků.
 
+## Webové rozhraní
+
+Totéž s prohlížečem vpředu, pro toho, kdo nechce otevírat terminál. Běží jen u vás
+na počítači: PDF putuje na lokální server, tam se opečetí a hned se vrátí.
+
+```bash
+cd web && npm ci && npm run build && cd ..
+python server.py
+```
+
+Pak otevřete http://127.0.0.1:8000. Tři kroky: pusťte tam PDF, řekněte, pro koho
+kopie jsou (jeden člověk, nebo CSV), a orazítkujte. U jednoho kupujícího dostanete
+PDF, u více zip. Než se cokoli opečetí, ukáže text pečeti přesně tak, jak bude
+zapsaný, pro každý řádek — špatně napsané jméno v osmdesáti souborech se zjišťuje
+draze.
+
+Razítkovat v prohlížeči nejde: potřebuje to qpdf, nativní binárku, a přepsat ho do
+JavaScriptu by znamenalo PDF skládat znovu, tedy přesně tu chybu, kvůli které tenhle
+projekt vznikl. Server poslouchá jen na loopbacku; opečetí, co dostane, a nemá nic
+jako přihlašování, takže nemá co dělat na síti. Nahrané soubory se při vypnutí mažou.
+
+Angular, žádný UI framework, testy přes `npm test` ve `web/`.
+
 ## Testy
 
 ```bash

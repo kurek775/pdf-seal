@@ -1,0 +1,54 @@
+<section class="card">
+  <h2><span class="step">3</span> Seal</h2>
+
+  <fieldset class="choices">
+    <legend class="muted">How the seal should appear</legend>
+
+    <label class="choice">
+      <input type="radio" name="visible" [checked]="!visible()" (change)="visible.set(false)" />
+      <span>
+        <strong>Invisible</strong>
+        Nothing shows on screen or in print, but the text is in the file and can be read back.
+        Traces a leaked copy; does not discourage anyone from sharing it.
+      </span>
+    </label>
+
+    <label class="choice">
+      <input type="radio" name="visible" [checked]="visible()" (change)="visible.set(true)" />
+      <span>
+        <strong>Visible</strong>
+        A small grey line in the footer of every page. People see their own name on it, which is
+        what actually discourages sharing.
+      </span>
+    </label>
+  </fieldset>
+
+  <button type="button" class="primary" [disabled]="!ready() || busy()" (click)="run()">
+    @if (busy()) {
+      Sealing {{ rows().length }} {{ rows().length === 1 ? 'copy' : 'copies' }}…
+    } @else {
+      Seal {{ rows().length }} {{ rows().length === 1 ? 'copy' : 'copies' }}
+    }
+  </button>
+
+  @if (!ready()) {
+    <p class="note">Fill in step 2 first.</p>
+  }
+
+  @if (finished(); as file) {
+    <div class="done">
+      <p>
+        <strong>{{ file.filename }}</strong> has been saved.
+        @if (hasNavigation()) {
+          All {{ counts().links }} links and {{ counts().bookmarks }} bookmarks are still there: the
+          server checks the counts after sealing and refuses to hand over a file that lost any.
+        }
+      </p>
+      <button type="button" class="ghost" (click)="save()">Save it again</button>
+    </div>
+  }
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+</section>

@@ -1,0 +1,110 @@
+<section class="card">
+  <h2><span class="step">2</span> Who gets a copy</h2>
+
+  <div class="tabs" role="tablist">
+    <button
+      type="button"
+      role="tab"
+      [attr.aria-selected]="mode() === 'one'"
+      [class.active]="mode() === 'one'"
+      (click)="setMode('one')"
+    >
+      One person
+    </button>
+    <button
+      type="button"
+      role="tab"
+      [attr.aria-selected]="mode() === 'many'"
+      [class.active]="mode() === 'many'"
+      (click)="setMode('many')"
+    >
+      A list from CSV
+    </button>
+  </div>
+
+  @if (mode() === 'one') {
+    <div class="fields">
+      <label>
+        Name
+        <input type="text" [ngModel]="name()" (ngModelChange)="name.set($event)" name="name" />
+      </label>
+      <label>
+        E-mail
+        <input type="email" [ngModel]="email()" (ngModelChange)="email.set($event)" name="email" />
+      </label>
+      <label>
+        Order number <span class="muted">optional</span>
+        <input type="text" [ngModel]="order()" (ngModelChange)="order.set($event)" name="order" />
+      </label>
+    </div>
+  } @else {
+    @if (!csvRows().length) {
+      <app-file-drop
+        accept=".csv,text/csv"
+        label="Drop a CSV of buyers"
+        hint="one row per person, with a header line"
+        (picked)="onCsv($event)"
+      />
+      <p class="note">
+        Commas or semicolons, quoted fields and accents are all handled. Any column can be used
+        below by its header name.
+      </p>
+    } @else {
+      <div class="summary">
+        <div>
+          <strong>{{ csvName() }}</strong>
+          <span class="muted">{{ csvRows().length }} rows</span>
+        </div>
+        <span class="muted">columns: {{ columns().join(', ') }}</span>
+      </div>
+
+      <div class="fields">
+        <label>
+          Seal text
+          <input
+            type="text"
+            [ngModel]="template()"
+            (ngModelChange)="template.set($event)"
+            name="template"
+          />
+        </label>
+        <label>
+          File name
+          <input
+            type="text"
+            [ngModel]="filenameTemplate()"
+            (ngModelChange)="filenameTemplate.set($event)"
+            name="filenameTemplate"
+          />
+        </label>
+      </div>
+
+      @if (unknownPlaceholders().length) {
+        <p class="error">
+          The CSV has no column called {{ unknownPlaceholders().join(', ') }}. Those will be written
+          out literally.
+        </p>
+      }
+    }
+    @if (csvError()) {
+      <p class="error">{{ csvError() }}</p>
+    }
+  }
+
+  @if (rows().length) {
+    <div class="preview">
+      <h3>This is what goes into each file</h3>
+      <ul>
+        @for (row of preview(); track row.filename + row.text) {
+          <li>
+            <code>{{ row.text }}</code>
+            <span class="muted">{{ row.filename }}</span>
+          </li>
+        }
+      </ul>
+      @if (rows().length > preview().length) {
+        <p class="muted">and {{ rows().length - preview().length }} more</p>
+      }
+    </div>
+  }
+</section>

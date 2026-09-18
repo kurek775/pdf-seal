@@ -108,6 +108,30 @@ rest of the Czech set. Accents are therefore stripped from the seal text: "Šár
 Kvašňáková" is stored as "Sarka Kvasnakova". The identifiers that matter for tracing,
 the e-mail address and the order number, are plain ASCII anyway.
 
+## The web UI
+
+Same thing with a browser in front of it, for anyone who would rather not open a
+terminal. It runs on your machine only: the PDF goes to a local server, gets sealed
+there and comes straight back.
+
+```bash
+cd web && npm ci && npm run build && cd ..
+python server.py
+```
+
+Then open http://127.0.0.1:8000. Three steps: drop the PDF, say who the copies are
+for -- one person, or a CSV -- and seal. One buyer gives you a PDF, several give you
+a zip. Before sealing it shows the seal text exactly as it will be written for every
+row, because a name that is wrong across eighty files is expensive to discover later.
+
+Sealing cannot happen in the browser: it needs qpdf, a native binary, and rewriting
+it in JavaScript would mean rebuilding the PDF -- the exact mistake this project
+exists to avoid. The server listens on the loopback interface only; it seals whatever
+it is handed and has nothing resembling authentication, so it has no business being
+reachable from a network. Uploads are deleted when it stops.
+
+Angular, no UI framework, tests with `npm test` in `web/`.
+
 ## Tests
 
 ```bash

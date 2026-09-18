@@ -1,3 +1,9 @@
 opecetene/
+sealed/
 *.pdf
 __pycache__/
+
+# Angular
+web/node_modules/
+web/dist/
+web/.angular/

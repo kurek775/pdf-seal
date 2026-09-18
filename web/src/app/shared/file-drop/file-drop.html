@@ -1,0 +1,17 @@
+<div
+  class="drop"
+  [class.hovering]="hovering()"
+  role="button"
+  tabindex="0"
+  (click)="open()"
+  (keydown)="onKey($event)"
+  (dragover)="onDragOver($event)"
+  (dragleave)="onDragLeave()"
+  (drop)="onDrop($event)"
+>
+  <strong>{{ label() }}</strong>
+  @if (hint()) {
+    <span class="hint">{{ hint() }}</span>
+  }
+  <input #picker type="file" [accept]="accept()" hidden (change)="onPick($event)" />
+</div>

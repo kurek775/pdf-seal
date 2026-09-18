@@ -1,0 +1,21 @@
+<header>
+  <h1>pdf-seal</h1>
+  <p>
+    Writes the buyer's details into a PDF without breaking the links from its table of contents or
+    its bookmarks.
+  </p>
+</header>
+
+<main>
+  <app-upload-step [result]="upload()" (uploaded)="onUploaded($event)" (cleared)="onCleared()" />
+
+  @if (upload(); as ready) {
+    <app-buyers-step (rowsChanged)="onRows($event)" />
+    <app-seal-step [upload]="ready" [rows]="rows()" />
+  }
+</main>
+
+<footer>
+  Runs entirely on this machine. Nothing is uploaded anywhere else, and the files are deleted when
+  the server stops.
+</footer>

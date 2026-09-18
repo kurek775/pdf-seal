@@ -1,0 +1,39 @@
+<section class="card">
+  <h2><span class="step">1</span> The PDF</h2>
+
+  @if (!result()) {
+    <app-file-drop
+      accept="application/pdf,.pdf"
+      label="Drop your PDF here"
+      hint="or click to choose one. It never leaves this machine."
+      (picked)="onPicked($event)"
+    />
+    @if (busy()) {
+      <p class="note">Reading {{ filename() }}…</p>
+    }
+  } @else {
+    <div class="summary">
+      <div>
+        <strong>{{ filename() }}</strong>
+        <span class="muted">{{ result()!.pages }} pages</span>
+      </div>
+      <button type="button" class="ghost" (click)="clear()">Use a different file</button>
+    </div>
+
+    @if (result()!.counts.links || result()!.counts.bookmarks) {
+      <p class="note">
+        Found <strong>{{ result()!.counts.links }}</strong> links and
+        <strong>{{ result()!.counts.bookmarks }}</strong> bookmarks. They will still be there
+        afterwards, and this page will show you the count again to prove it.
+      </p>
+    } @else {
+      <p class="note">
+        This file has no links or bookmarks, so there is nothing for sealing to break.
+      </p>
+    }
+  }
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+</section>
